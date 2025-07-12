@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Image, Pressable } from 'react-native';
 import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal } from 'lucide-react-native';
 import { Stack, router } from 'expo-router';
 import { usePostsStore } from '@/stores/posts-store';
@@ -49,16 +49,26 @@ export default function AllPostsScreen() {
   const renderPost = (post: any) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
     const isOwnPost = user ? post.userId === user.id : false;
+    const roleAccent = post.userRole === 'athlete' ? currentColors.athleteAccent : currentColors.coachAccent;
+    const roleBackground = post.userRole === 'athlete' ? currentColors.athleteBackground : currentColors.coachBackground;
 
     return (
-      <View key={post.id} style={[styles.postCard, { backgroundColor: currentColors.background }]}>
+      <Pressable 
+        key={post.id} 
+        style={({ pressed }) => [
+          styles.postCard, 
+          { backgroundColor: currentColors.cardBackground },
+          shadows.postCard,
+          pressed && { opacity: 0.98, transform: [{ scale: 0.995 }] }
+        ]}
+      >
         <View style={styles.postHeader}>
           <View style={styles.userInfo}>
-            <View style={[styles.avatar, { backgroundColor: currentColors.systemFill }]}>
+            <View style={[styles.avatar, { backgroundColor: roleBackground }]}>
               {post.userAvatar ? (
                 <Image source={{ uri: post.userAvatar }} style={styles.avatarImage} />
               ) : (
-                <Text style={[styles.avatarText, { color: currentColors.primary }]}>
+                <Text style={[styles.avatarText, { color: roleAccent }]}>
                   {post.userName.charAt(0).toUpperCase()}
                 </Text>
               )}
@@ -66,7 +76,7 @@ export default function AllPostsScreen() {
             <View style={styles.userDetails}>
               <Text style={[styles.userName, { color: currentColors.text }]}>{post.userName}</Text>
               <View style={styles.userMeta}>
-                <Text style={[styles.userRole, { color: currentColors.primary }]}>{post.userRole}</Text>
+                <Text style={[styles.userRole, { color: roleAccent }]}>{post.userRole}</Text>
                 {post.sport && <Text style={[styles.userSport, { color: currentColors.textSecondary }]}>• {post.sport}</Text>}
                 <Text style={[styles.timestamp, { color: currentColors.textSecondary }]}>• {formatTimeAgo(post.timestamp)}</Text>
               </View>
@@ -89,16 +99,19 @@ export default function AllPostsScreen() {
         {post.skills && post.skills.length > 0 && (
           <View style={styles.skillsContainer}>
             {post.skills.map((skill: string, index: number) => (
-              <View key={index} style={[styles.skillTag, { backgroundColor: currentColors.primary }]}>
+              <View key={index} style={[styles.skillTag, { backgroundColor: roleAccent }]}>
                 <Text style={styles.skillText}>{skill}</Text>
               </View>
             ))}
           </View>
         )}
 
-        <View style={styles.postActions}>
-          <TouchableOpacity 
-            style={styles.actionButton}
+        <View style={[styles.postActions, { borderTopColor: currentColors.border }]}>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.7 }
+            ]}
             onPress={() => handleLikePost(post.id)}
           >
             <Heart 
@@ -109,18 +122,24 @@ export default function AllPostsScreen() {
             <Text style={[styles.actionText, { color: currentColors.textSecondary }, isLiked && { color: currentColors.error }]}>
               {post.likes}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity 
-            style={styles.actionButton}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.7 }
+            ]}
             onPress={() => setSelectedPostForComments(post.id)}
           >
             <MessageCircle size={20} color={currentColors.textSecondary} />
             <Text style={[styles.actionText, { color: currentColors.textSecondary }]}>{post.comments}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity 
-            style={styles.actionButton}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.7 }
+            ]}
             onPress={() => setSelectedPostForShare({
               id: post.id,
               content: post.content,
@@ -128,9 +147,9 @@ export default function AllPostsScreen() {
             })}
           >
             <Share size={20} color={currentColors.textSecondary} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
-      </View>
+      </Pressable>
     );
   };
 
@@ -227,6 +246,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 17,
     fontWeight: '400',
+    lineHeight: 22,
   },
   content: {
     flex: 1,
@@ -250,6 +270,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 8,
     textAlign: 'center',
+    lineHeight: 29,
   },
   emptySubtitle: {
     fontSize: 16,
@@ -258,26 +279,28 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   postsContainer: {
-    paddingBottom: 20,
+    paddingBottom: 32,
   },
   postsCount: {
     fontSize: 14,
     fontWeight: '400',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    lineHeight: 18,
   },
   postCard: {
     padding: 20,
-    marginBottom: 12,
-    marginHorizontal: 16,
+    marginBottom: 16,
+    marginHorizontal: 20,
     borderRadius: 16,
-    ...shadows.card,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   postHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   userInfo: {
     flexDirection: 'row',
@@ -285,22 +308,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     overflow: 'hidden',
   },
   avatarImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   avatarText: {
     fontSize: 18,
     fontWeight: '600',
+    lineHeight: 22,
   },
   userDetails: {
     flex: 1,
@@ -308,7 +332,8 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 4,
+    lineHeight: 21,
   },
   userMeta: {
     flexDirection: 'row',
@@ -318,26 +343,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textTransform: 'capitalize',
+    lineHeight: 18,
   },
   userSport: {
     fontSize: 14,
+    lineHeight: 18,
   },
   timestamp: {
     fontSize: 14,
+    lineHeight: 18,
   },
   moreButton: {
-    padding: 4,
+    padding: 8,
   },
   postContent: {
     fontSize: 16,
     lineHeight: 24,
-    marginBottom: 12,
+    marginBottom: 16,
+    fontWeight: '400',
   },
   skillsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   skillTag: {
     paddingHorizontal: 12,
@@ -348,22 +377,24 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+    lineHeight: 18,
   },
   postActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 24,
-    paddingTop: 12,
-    borderTopWidth: 0.33,
-    borderTopColor: colors.border,
+    gap: 32,
+    paddingTop: 16,
+    borderTopWidth: 0.5,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    paddingVertical: 4,
   },
   actionText: {
     fontSize: 14,
     fontWeight: '500',
+    lineHeight: 18,
   },
 });

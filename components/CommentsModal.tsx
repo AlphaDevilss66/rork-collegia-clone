@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { X, Send } from 'lucide-react-native';
 import { colors, darkColors } from '@/constants/colors';
 import { useCommentsStore } from '@/stores/comments-store';
 import { useUserStore } from '@/stores/user-store';
 import { useThemeStore } from '@/stores/theme-store';
+import { shadows } from '@/styles/shadows';
 
 interface CommentsModalProps {
   visible: boolean;
@@ -59,11 +60,18 @@ export default function CommentsModal({ visible, onClose, postId }: CommentsModa
         style={[styles.container, { backgroundColor: currentColors.groupedBackground }]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={[styles.header, { backgroundColor: currentColors.background, borderBottomColor: currentColors.border }]}>
+        <View style={[styles.header, { backgroundColor: currentColors.cardBackground, borderBottomColor: currentColors.border }, shadows.navbar]}>
           <Text style={[styles.headerTitle, { color: currentColors.text }]}>Comments</Text>
-          <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: currentColors.systemFill }]}>
+          <Pressable 
+            onPress={onClose} 
+            style={({ pressed }) => [
+              styles.closeButton, 
+              { backgroundColor: currentColors.systemFill },
+              pressed && { opacity: 0.7 }
+            ]}
+          >
             <X size={22} color={currentColors.textSecondary} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <ScrollView style={styles.commentsList} showsVerticalScrollIndicator={false}>
@@ -77,7 +85,7 @@ export default function CommentsModal({ visible, onClose, postId }: CommentsModa
             </View>
           ) : (
             postComments.map((comment) => (
-              <View key={comment.id} style={[styles.commentItem, { backgroundColor: currentColors.background }]}>
+              <View key={comment.id} style={[styles.commentItem, { backgroundColor: currentColors.cardBackground }]}>
                 <View style={[styles.commentAvatar, { backgroundColor: currentColors.systemFill }]}>
                   <Text style={[styles.commentAvatarText, { color: currentColors.primary }]}>
                     {comment.userName.charAt(0)}
@@ -97,7 +105,7 @@ export default function CommentsModal({ visible, onClose, postId }: CommentsModa
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { backgroundColor: currentColors.background, borderTopColor: currentColors.border }]}>
+        <View style={[styles.inputContainer, { backgroundColor: currentColors.cardBackground, borderTopColor: currentColors.border }, shadows.navbar]}>
           <View style={[styles.inputWrapper, { backgroundColor: currentColors.systemFill }]}>
             <TextInput
               style={[styles.textInput, { color: currentColors.text }]}
@@ -108,13 +116,17 @@ export default function CommentsModal({ visible, onClose, postId }: CommentsModa
               maxLength={500}
               placeholderTextColor={currentColors.textSecondary}
             />
-            <TouchableOpacity 
-              style={[styles.sendButton, !newComment.trim() && styles.sendButtonDisabled]}
+            <Pressable 
+              style={({ pressed }) => [
+                styles.sendButton, 
+                !newComment.trim() && styles.sendButtonDisabled,
+                pressed && newComment.trim() && { opacity: 0.7 }
+              ]}
               onPress={handleAddComment}
               disabled={!newComment.trim()}
             >
               <Send size={18} color={newComment.trim() ? currentColors.primary : currentColors.textSecondary} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -133,23 +145,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 12,
-    borderBottomWidth: 0.33,
+    borderBottomWidth: 0.5,
   },
   headerTitle: {
     fontSize: 17,
     fontWeight: '600',
+    lineHeight: 22,
   },
   closeButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.systemFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   commentsList: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   emptyState: {
     alignItems: 'center',
@@ -158,48 +169,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: colors.systemFill,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   emptyIconText: {
-    fontSize: 20,
+    fontSize: 24,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
-    marginBottom: 6,
+    marginBottom: 8,
+    lineHeight: 23,
   },
   emptySubtitle: {
     fontSize: 15,
-    color: colors.textSecondary,
     fontWeight: '400',
+    lineHeight: 20,
   },
   commentItem: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 0.33,
-    borderBottomColor: colors.border,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(0, 0, 0, 0.04)',
   },
   commentAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.systemFill,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   commentAvatarText: {
-    color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
+    lineHeight: 18,
   },
   commentContent: {
     flex: 1,
@@ -207,36 +216,32 @@ const styles = StyleSheet.create({
   commentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   commentUserName: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
     marginRight: 8,
+    lineHeight: 18,
   },
   commentTime: {
     fontSize: 12,
-    color: colors.textSecondary,
     fontWeight: '400',
+    lineHeight: 16,
   },
   commentText: {
     fontSize: 14,
-    color: colors.text,
-    lineHeight: 18,
+    lineHeight: 20,
     fontWeight: '400',
   },
   inputContainer: {
-    backgroundColor: colors.background,
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderTopWidth: 0.33,
-    borderTopColor: colors.border,
+    paddingVertical: 16,
+    borderTopWidth: 0.5,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: colors.systemFill,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -245,10 +250,10 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 15,
-    color: colors.text,
     maxHeight: 80,
     paddingVertical: 6,
     fontWeight: '400',
+    lineHeight: 20,
   },
   sendButton: {
     marginLeft: 8,

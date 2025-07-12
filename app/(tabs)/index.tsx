@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Image, Pressable } from 'react-native';
 import { Heart, MessageCircle, Share, MoreHorizontal, Sparkles, Plus, ChevronRight, Users, User, Edit3 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { usePostsStore } from '@/stores/posts-store';
@@ -32,6 +32,7 @@ export default function HomeScreen() {
   
   // Get users to display based on current user's role
   const usersToShow = user?.role === 'athlete' ? mockCoaches : mockAthletes;
+  const sectionTitle = user?.role === 'athlete' ? t('allCoaches') : t('allAthletes');
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
@@ -62,20 +63,19 @@ export default function HomeScreen() {
     }
   };
 
-  const handleLikePost = (postId: string) => {
-    if (!user) {
-      router.push('/auth/sign-in');
-    } else {
-      toggleLike(postId, user.id);
-    }
-  };
-
   const renderRecentPostCard = (post: any, index: number) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
+    const roleAccent = post.userRole === 'athlete' ? currentColors.athleteAccent : currentColors.coachAccent;
+    
     return (
-      <TouchableOpacity 
+      <Pressable 
         key={post.id} 
-        style={[styles.recentPostCard, { backgroundColor: currentColors.background }]}
+        style={({ pressed }) => [
+          styles.recentPostCard, 
+          { backgroundColor: currentColors.cardBackground },
+          shadows.card,
+          pressed && { opacity: 0.95, transform: [{ scale: 0.98 }] }
+        ]}
         onPress={() => {
           // Navigate to post details or expand
         }}
@@ -84,11 +84,11 @@ export default function HomeScreen() {
           <View style={styles.recentPostHeader}>
             <View style={styles.recentPostUserInfo}>
               <View style={[styles.recentPostAvatar, { backgroundColor: currentColors.systemFill }]}>
-                <Text style={[styles.recentPostAvatarText, { color: currentColors.primary }]}>
+                <Text style={[styles.recentPostAvatarText, { color: roleAccent }]}>
                   {post.userName.charAt(0).toUpperCase()}
                 </Text>
               </View>
-              <View>
+              <View style={styles.recentPostDetails}>
                 <Text style={[styles.recentPostAuthor, { color: currentColors.text }]} numberOfLines={1}>
                   {post.userName}
                 </Text>
@@ -98,33 +98,35 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
-          <Text style={[styles.recentPostContentText, { color: currentColors.text }]} numberOfLines={2}>
+          <Text style={[styles.recentPostContentText, { color: currentColors.text }]} numberOfLines={3}>
             {post.content}
           </Text>
           <View style={styles.recentPostStats}>
-            <TouchableOpacity 
-              style={styles.recentPostStat}
-              onPress={() => handleLikePost(post.id)}
-            >
+            <View style={styles.recentPostStat}>
               <Heart size={16} color={isLiked ? currentColors.error : currentColors.textSecondary} fill={isLiked ? currentColors.error : 'none'} />
               <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.likes}</Text>
-            </TouchableOpacity>
+            </View>
             <View style={styles.recentPostStat}>
               <MessageCircle size={16} color={currentColors.textSecondary} />
               <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.comments?.length || 0}</Text>
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   const renderUserCard = (userItem: any, index: number) => {
     const isCoach = userItem.role === 'coach';
     return (
-      <TouchableOpacity 
+      <Pressable 
         key={userItem.id} 
-        style={[styles.userCard, { backgroundColor: currentColors.background }]}
+        style={({ pressed }) => [
+          styles.userCard, 
+          { backgroundColor: currentColors.cardBackground },
+          shadows.card,
+          pressed && { opacity: 0.95, transform: [{ scale: 0.98 }] }
+        ]}
         onPress={() => {
           // Navigate to user profile
         }}
@@ -137,11 +139,11 @@ export default function HomeScreen() {
           <Text style={[styles.userCardTitle, { color: 'white' }]} numberOfLines={1}>
             {isCoach ? userItem.specialization : userItem.sport}
           </Text>
-          <Text style={[styles.userCardSubtitle, { color: 'rgba(255,255,255,0.8)' }]} numberOfLines={1}>
+          <Text style={[styles.userCardSubtitle, { color: 'rgba(255,255,255,0.85)' }]} numberOfLines={1}>
             {userItem.name}
           </Text>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
@@ -150,18 +152,26 @@ export default function HomeScreen() {
       <View style={[styles.header, { backgroundColor: currentColors.groupedBackground }]}>
         <Text style={[styles.headerTitle, { color: currentColors.text }]}>{t('dashboard')}</Text>
         <View style={styles.headerActions}>
-          <TouchableOpacity 
-            style={[styles.createButton, shadows.createButton]}
+          <Pressable 
+            style={({ pressed }) => [
+              styles.createButton, 
+              shadows.createButton,
+              pressed && { opacity: 0.9, transform: [{ scale: 0.95 }] }
+            ]}
             onPress={handleCreatePost}
           >
             <Plus size={20} color="#000000" strokeWidth={2.5} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.myPostsButton, shadows.createButton]}
+          </Pressable>
+          <Pressable 
+            style={({ pressed }) => [
+              styles.myPostsButton, 
+              shadows.createButton,
+              pressed && { opacity: 0.9, transform: [{ scale: 0.95 }] }
+            ]}
             onPress={handleMyPosts}
           >
             <Edit3 size={18} color="#000000" strokeWidth={2.5} />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
       
@@ -173,7 +183,7 @@ export default function HomeScreen() {
         {/* Recent Posts Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('recentPost')}</Text>
+            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('recentPosts')}</Text>
             <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-posts')}>
               <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
             </TouchableOpacity>
@@ -183,10 +193,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* All Coaches Section */}
+        {/* All Coaches/Athletes Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('allCoaches')}</Text>
+            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{sectionTitle}</Text>
             <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-users')}>
               <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
             </TouchableOpacity>
@@ -243,12 +253,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   headerTitle: {
     fontSize: 34,
     fontWeight: '700',
-    letterSpacing: -0.4,
+    letterSpacing: -0.41,
+    lineHeight: 41,
   },
   headerActions: {
     flexDirection: 'row',
@@ -258,10 +269,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   feedContent: {
-    paddingBottom: 20,
+    paddingBottom: 32,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 40,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -273,14 +284,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: '700',
-    letterSpacing: -0.3,
+    letterSpacing: -0.26,
+    lineHeight: 28,
   },
   sectionAction: {
-    padding: 4,
+    padding: 8,
   },
   sectionActionText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+    lineHeight: 21,
   },
   recentPostsGrid: {
     flexDirection: 'row',
@@ -291,65 +304,67 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     padding: 16,
-    minHeight: 140,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    minHeight: 160,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   recentPostContent: {
     flex: 1,
-  },
-  recentPostContentText: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginVertical: 8,
+    justifyContent: 'space-between',
   },
   recentPostHeader: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   recentPostUserInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   recentPostAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 10,
   },
   recentPostAvatarText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    lineHeight: 16,
+  },
+  recentPostDetails: {
+    flex: 1,
   },
   recentPostAuthor: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
+    lineHeight: 20,
     marginBottom: 1,
   },
   recentPostTime: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '400',
+    lineHeight: 18,
+  },
+  recentPostContentText: {
+    fontSize: 15,
+    lineHeight: 20,
+    marginBottom: 12,
     fontWeight: '400',
   },
   recentPostStats: {
     flexDirection: 'row',
     gap: 16,
-    marginTop: 8,
   },
   recentPostStat: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   recentPostStatText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
+    lineHeight: 18,
   },
   usersGrid: {
     flexDirection: 'row',
@@ -363,14 +378,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     position: 'relative',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   userCardImage: {
     width: '100%',
@@ -383,16 +392,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   userCardTitle: {
     fontSize: 16,
     fontWeight: '600',
+    lineHeight: 21,
     marginBottom: 2,
   },
   userCardSubtitle: {
     fontSize: 13,
     fontWeight: '400',
+    lineHeight: 18,
   },
   createButton: {
     width: 40,

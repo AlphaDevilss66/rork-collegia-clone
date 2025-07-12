@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Alert, Pressable } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { X, Camera, Image as ImageIcon } from 'lucide-react-native';
 import { usePostsStore } from '@/stores/posts-store';
@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user-store';
 import { useThemeStore } from '@/stores/theme-store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { colors, darkColors } from '@/constants/colors';
+import { shadows } from '@/styles/shadows';
 
 export default function CreatePostScreen() {
   const params = useLocalSearchParams();
@@ -105,6 +106,8 @@ export default function CreatePostScreen() {
     router.back();
   };
 
+  const roleAccent = user?.role === 'athlete' ? currentColors.athleteAccent : currentColors.coachAccent;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.groupedBackground }]}>
       <Stack.Screen 
@@ -120,14 +123,15 @@ export default function CreatePostScreen() {
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <TouchableOpacity 
+            <Pressable 
               onPress={handlePost}
-              style={[
+              style={({ pressed }) => [
                 styles.postButton, 
                 { 
                   backgroundColor: content.trim() ? currentColors.primary : currentColors.systemFill,
                   opacity: content.trim() ? 1 : 0.6
-                }
+                },
+                pressed && content.trim() && { opacity: 0.9, transform: [{ scale: 0.98 }] }
               ]}
               disabled={!content.trim()}
             >
@@ -140,13 +144,13 @@ export default function CreatePostScreen() {
               ]}>
                 {isEditMode ? 'Update' : 'Post'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ),
         }} 
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.inputSection, { backgroundColor: currentColors.background }]}>
+        <View style={[styles.inputSection, { backgroundColor: currentColors.cardBackground }, shadows.card]}>
           <TextInput
             style={[styles.textInput, { color: currentColors.text }]}
             placeholder={t('whatsOnYourMind')}
@@ -162,7 +166,7 @@ export default function CreatePostScreen() {
           </Text>
         </View>
 
-        <View style={[styles.section, { backgroundColor: currentColors.background }]}>
+        <View style={[styles.section, { backgroundColor: currentColors.cardBackground }, shadows.card]}>
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('skillsHighlights')}</Text>
           <Text style={[styles.sectionSubtitle, { color: currentColors.textSecondary }]}>
             {t('addSkillsDescription')}
@@ -182,26 +186,34 @@ export default function CreatePostScreen() {
               onSubmitEditing={handleAddSkill}
               returnKeyType="done"
             />
-            <TouchableOpacity 
+            <Pressable 
               onPress={handleAddSkill}
-              style={[styles.addSkillButton, { backgroundColor: currentColors.primary }]}
+              style={({ pressed }) => [
+                styles.addSkillButton, 
+                { backgroundColor: roleAccent },
+                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
+              ]}
               disabled={!skillInput.trim() || selectedSkills.length >= 5}
             >
               <Text style={styles.addSkillButtonText}>{t('add')}</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {selectedSkills.length > 0 && (
             <View style={styles.selectedSkills}>
               {selectedSkills.map((skill, index) => (
-                <TouchableOpacity
+                <Pressable
                   key={index}
-                  style={[styles.skillTag, { backgroundColor: currentColors.primary }]}
+                  style={({ pressed }) => [
+                    styles.skillTag, 
+                    { backgroundColor: roleAccent },
+                    pressed && { opacity: 0.8 }
+                  ]}
                   onPress={() => handleRemoveSkill(skill)}
                 >
                   <Text style={styles.skillTagText}>{skill}</Text>
                   <X size={14} color="white" />
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           )}
@@ -213,12 +225,16 @@ export default function CreatePostScreen() {
                 .filter(skill => !selectedSkills.includes(skill))
                 .slice(0, 8)
                 .map((skill, index) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={index}
-                    style={[styles.suggestedSkill, { 
-                      backgroundColor: currentColors.systemFill,
-                      borderColor: currentColors.border
-                    }]}
+                    style={({ pressed }) => [
+                      styles.suggestedSkill, 
+                      { 
+                        backgroundColor: currentColors.systemFill,
+                        borderColor: currentColors.border
+                      },
+                      pressed && { opacity: 0.7 }
+                    ]}
                     onPress={() => {
                       if (selectedSkills.length < 5) {
                         setSelectedSkills([...selectedSkills, skill]);
@@ -229,23 +245,35 @@ export default function CreatePostScreen() {
                     <Text style={[styles.suggestedSkillText, { color: currentColors.primary }]}>
                       {skill}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
             </View>
           </View>
         </View>
 
-        <View style={[styles.section, { backgroundColor: currentColors.background }]}>
+        <View style={[styles.section, { backgroundColor: currentColors.cardBackground }, shadows.card]}>
           <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('addMedia')}</Text>
           <View style={styles.mediaOptions}>
-            <TouchableOpacity style={[styles.mediaOption, { backgroundColor: currentColors.systemFill }]}>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.mediaOption, 
+                { backgroundColor: currentColors.systemFill },
+                pressed && { opacity: 0.7 }
+              ]}
+            >
               <Camera size={24} color={currentColors.primary} />
               <Text style={[styles.mediaOptionText, { color: currentColors.text }]}>{t('camera')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.mediaOption, { backgroundColor: currentColors.systemFill }]}>
+            </Pressable>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.mediaOption, 
+                { backgroundColor: currentColors.systemFill },
+                pressed && { opacity: 0.7 }
+              ]}
+            >
               <ImageIcon size={24} color={currentColors.primary} />
               <Text style={[styles.mediaOptionText, { color: currentColors.text }]}>{t('gallery')}</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -264,6 +292,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 17,
     fontWeight: '400',
+    lineHeight: 22,
   },
   postButton: {
     paddingHorizontal: 20,
@@ -276,62 +305,56 @@ const styles = StyleSheet.create({
   postButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    lineHeight: 21,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   inputSection: {
     borderRadius: 16,
     padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    marginBottom: 20,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   textInput: {
     fontSize: 16,
     lineHeight: 22,
     minHeight: 120,
     textAlignVertical: 'top',
+    fontWeight: '400',
   },
   characterCount: {
     fontSize: 12,
     textAlign: 'right',
-    marginTop: 8,
+    marginTop: 12,
+    lineHeight: 16,
   },
   section: {
     borderRadius: 16,
     padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    marginBottom: 20,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 4,
     letterSpacing: -0.2,
+    lineHeight: 25,
   },
   sectionSubtitle: {
     fontSize: 14,
-    marginBottom: 16,
+    marginBottom: 20,
+    lineHeight: 18,
+    fontWeight: '400',
   },
   skillInputContainer: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   skillInput: {
     flex: 1,
@@ -340,6 +363,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
     borderWidth: 1,
+    lineHeight: 21,
   },
   addSkillButton: {
     paddingHorizontal: 20,
@@ -351,12 +375,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+    lineHeight: 21,
   },
   selectedSkills: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   skillTag: {
     flexDirection: 'row',
@@ -370,6 +395,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     fontWeight: '500',
+    lineHeight: 18,
   },
   suggestedSkills: {
     marginTop: 8,
@@ -378,6 +404,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 12,
+    lineHeight: 18,
   },
   suggestedSkillsContainer: {
     flexDirection: 'row',
@@ -393,6 +420,7 @@ const styles = StyleSheet.create({
   suggestedSkillText: {
     fontSize: 14,
     fontWeight: '500',
+    lineHeight: 18,
   },
   mediaOptions: {
     flexDirection: 'row',
@@ -408,5 +436,6 @@ const styles = StyleSheet.create({
   mediaOptionText: {
     fontSize: 14,
     fontWeight: '500',
+    lineHeight: 18,
   },
 });
