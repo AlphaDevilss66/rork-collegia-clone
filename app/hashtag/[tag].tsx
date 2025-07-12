@@ -72,6 +72,14 @@ export default function HashtagScreen() {
     deletePost(postId);
   };
 
+  const handleLikePost = (postId: string) => {
+    if (!user) {
+      router.push('/auth/sign-in');
+    } else {
+      toggleLike(postId, user.id);
+    }
+  };
+
   const renderPost = (post: any) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
     const isOwnPost = user ? post.userId === user.id : false;
@@ -125,8 +133,7 @@ export default function HashtagScreen() {
         <View style={styles.postActions}>
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => user && toggleLike(post.id, user.id)}
-            disabled={!user}
+            onPress={() => handleLikePost(post.id)}
           >
             <Heart 
               size={20} 
@@ -199,7 +206,8 @@ export default function HashtagScreen() {
             </View>
             <Text style={[styles.emptyTitle, { color: currentColors.text }]}>No posts found</Text>
             <Text style={[styles.emptySubtitle, { color: currentColors.textSecondary }]}>
-              There are no posts with #{tag} yet.{'\n'}
+              There are no posts with #{tag} yet.{'
+'}
               Be the first to post with this hashtag!
             </Text>
           </View>

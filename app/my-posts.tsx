@@ -59,6 +59,14 @@ export default function MyPostsScreen() {
     });
   };
 
+  const handleLikePost = (postId: string) => {
+    if (!user) {
+      router.push('/auth/sign-in');
+    } else {
+      toggleLike(postId, user.id);
+    }
+  };
+
   const renderPost = (post: any) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
 
@@ -115,8 +123,7 @@ export default function MyPostsScreen() {
         <View style={styles.postStats}>
           <TouchableOpacity 
             style={styles.statButton}
-            onPress={() => user && toggleLike(post.id, user.id)}
-            disabled={!user}
+            onPress={() => handleLikePost(post.id)}
           >
             <Heart 
               size={20} 

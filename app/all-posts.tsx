@@ -38,6 +38,14 @@ export default function AllPostsScreen() {
     deletePost(postId);
   };
 
+  const handleLikePost = (postId: string) => {
+    if (!user) {
+      router.push('/auth/sign-in');
+    } else {
+      toggleLike(postId, user.id);
+    }
+  };
+
   const renderPost = (post: any) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
     const isOwnPost = user ? post.userId === user.id : false;
@@ -91,8 +99,7 @@ export default function AllPostsScreen() {
         <View style={styles.postActions}>
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => user && toggleLike(post.id, user.id)}
-            disabled={!user}
+            onPress={() => handleLikePost(post.id)}
           >
             <Heart 
               size={20} 

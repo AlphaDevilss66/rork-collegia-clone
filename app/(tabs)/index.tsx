@@ -63,6 +63,14 @@ export default function HomeScreen() {
     }
   };
 
+  const handleLikePost = (postId: string) => {
+    if (!user) {
+      router.push('/auth/sign-in');
+    } else {
+      toggleLike(postId, user.id);
+    }
+  };
+
   const renderRecentPostCard = (post: any, index: number) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
     return (
@@ -95,10 +103,13 @@ export default function HomeScreen() {
             {post.content}
           </Text>
           <View style={styles.recentPostStats}>
-            <View style={styles.recentPostStat}>
+            <TouchableOpacity 
+              style={styles.recentPostStat}
+              onPress={() => handleLikePost(post.id)}
+            >
               <Heart size={16} color={isLiked ? currentColors.error : currentColors.textSecondary} fill={isLiked ? currentColors.error : 'none'} />
               <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.likes}</Text>
-            </View>
+            </TouchableOpacity>
             <View style={styles.recentPostStat}>
               <MessageCircle size={16} color={currentColors.textSecondary} />
               <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.comments?.length || 0}</Text>
