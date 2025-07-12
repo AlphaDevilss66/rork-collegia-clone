@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/stores/user-store';
 import { router } from 'expo-router';
@@ -40,10 +40,21 @@ export default function SignInScreen() {
     router.push('/auth/sign-up');
   };
 
+  const handleBackToDashboard = () => {
+    router.replace('/(tabs)');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackToDashboard}>
+          <ChevronLeft size={24} color={colors.primary} />
+          <Text style={styles.backButtonText}>Dashboard</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.content}>
-        <View style={styles.header}>
+        <View style={styles.titleHeader}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to your Collegia account</Text>
         </View>
@@ -127,12 +138,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  backButtonText: {
+    fontSize: 17,
+    color: colors.primary,
+    fontWeight: '500',
+  },
   content: {
     flex: 1,
     padding: 24,
     justifyContent: 'center',
   },
-  header: {
+  titleHeader: {
     alignItems: 'center',
     marginBottom: 40,
   },
