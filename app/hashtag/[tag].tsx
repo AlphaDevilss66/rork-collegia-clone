@@ -206,8 +206,7 @@ export default function HashtagScreen() {
             </View>
             <Text style={[styles.emptyTitle, { color: currentColors.text }]}>No posts found</Text>
             <Text style={[styles.emptySubtitle, { color: currentColors.textSecondary }]}>
-              There are no posts with #{tag} yet.{'
-'}
+              There are no posts with #{tag} yet.{'\n'}
               Be the first to post with this hashtag!
             </Text>
           </View>
