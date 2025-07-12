@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Image } from 'react-native';
 import { ArrowLeft, Hash, Heart, MessageCircle, Share, MoreHorizontal } from 'lucide-react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { colors } from '@/constants/colors';
+import { useLocalSearchParams, router, Stack } from 'expo-router';
+import { colors, darkColors } from '@/constants/colors';
 import { usePostsStore } from '@/stores/posts-store';
 import { useUserStore } from '@/stores/user-store';
+import { useThemeStore } from '@/stores/theme-store';
+import { shadows } from '@/styles/shadows';
+import CommentsModal from '@/components/CommentsModal';
+import ShareModal from '@/components/ShareModal';
+import PostOptionsModal from '@/components/PostOptionsModal';
 
 export default function HashtagScreen() {
   const { tag } = useLocalSearchParams<{ tag: string }>();
-  const { posts, toggleLike, isPostLikedByUser } = usePostsStore();
+  const { posts, toggleLike, isPostLikedByUser, deletePost } = usePostsStore();
   const { user } = useUserStore();
+  const { isDarkMode } = useThemeStore();
+  const [selectedPostForComments, setSelectedPostForComments] = useState<string | null>(null);
+  const [selectedPostForShare, setSelectedPostForShare] = useState<{ id: string; content: string; author: string } | null>(null);
+  const [selectedPostForOptions, setSelectedPostForOptions] = useState<{ id: string; author: string; isOwnPost: boolean } | null>(null);
+
+  const currentColors = isDarkMode ? darkColors : colors;
 
   // Filter posts by hashtag (for demo, we'll create some mock posts with hashtags)
   const hashtagPosts = posts.filter(post => 
@@ -57,36 +68,54 @@ export default function HashtagScreen() {
     return `${Math.floor(diffInHours / 24)}d ago`;
   };
 
+  const handleDeletePost = (postId: string) => {
+    deletePost(postId);
+  };
+
   const renderPost = (post: any) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
+    const isOwnPost = user ? post.userId === user.id : false;
 
     return (
-      <View key={post.id} style={styles.postCard}>
+      <View key={post.id} style={[styles.postCard, { backgroundColor: currentColors.background }]}>
         <View style={styles.postHeader}>
           <View style={styles.userInfo}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{post.userName.charAt(0)}</Text>
+            <View style={[styles.avatar, { backgroundColor: currentColors.systemFill }]}>
+              {post.userAvatar ? (
+                <Image source={{ uri: post.userAvatar }} style={styles.avatarImage} />
+              ) : (
+                <Text style={[styles.avatarText, { color: currentColors.primary }]}>
+                  {post.userName.charAt(0).toUpperCase()}
+                </Text>
+              )}
             </View>
             <View style={styles.userDetails}>
-              <Text style={styles.userName}>{post.userName}</Text>
+              <Text style={[styles.userName, { color: currentColors.text }]}>{post.userName}</Text>
               <View style={styles.userMeta}>
-                <Text style={styles.userRole}>{post.userRole}</Text>
-                {post.sport && <Text style={styles.userSport}>• {post.sport}</Text>}
-                <Text style={styles.timestamp}>• {formatTimeAgo(post.timestamp)}</Text>
+                <Text style={[styles.userRole, { color: currentColors.primary }]}>{post.userRole}</Text>
+                {post.sport && <Text style={[styles.userSport, { color: currentColors.textSecondary }]}>• {post.sport}</Text>}
+                <Text style={[styles.timestamp, { color: currentColors.textSecondary }]}>• {formatTimeAgo(post.timestamp)}</Text>
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.moreButton}>
-            <MoreHorizontal size={20} color={colors.textSecondary} />
+          <TouchableOpacity 
+            style={styles.moreButton}
+            onPress={() => setSelectedPostForOptions({
+              id: post.id,
+              author: post.userName,
+              isOwnPost
+            })}
+          >
+            <MoreHorizontal size={20} color={currentColors.textSecondary} />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.postContent}>{post.content}</Text>
+        <Text style={[styles.postContent, { color: currentColors.text }]}>{post.content}</Text>
 
         {post.skills && post.skills.length > 0 && (
           <View style={styles.skillsContainer}>
             {post.skills.map((skill: string, index: number) => (
-              <View key={index} style={styles.skillTag}>
+              <View key={index} style={[styles.skillTag, { backgroundColor: currentColors.primary }]}>
                 <Text style={styles.skillText}>{skill}</Text>
               </View>
             ))}
@@ -101,21 +130,31 @@ export default function HashtagScreen() {
           >
             <Heart 
               size={20} 
-              color={isLiked ? colors.error : colors.textSecondary}
-              fill={isLiked ? colors.error : 'none'}
+              color={isLiked ? currentColors.error : currentColors.textSecondary}
+              fill={isLiked ? currentColors.error : 'none'}
             />
-            <Text style={[styles.actionText, isLiked && { color: colors.error }]}>
+            <Text style={[styles.actionText, { color: currentColors.textSecondary }, isLiked && { color: currentColors.error }]}>
               {post.likes}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton}>
-            <MessageCircle size={20} color={colors.textSecondary} />
-            <Text style={styles.actionText}>{post.comments}</Text>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => setSelectedPostForComments(post.id)}
+          >
+            <MessageCircle size={20} color={currentColors.textSecondary} />
+            <Text style={[styles.actionText, { color: currentColors.textSecondary }]}>{post.comments}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton}>
-            <Share size={20} color={colors.textSecondary} />
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => setSelectedPostForShare({
+              id: post.id,
+              content: post.content,
+              author: post.userName
+            })}
+          >
+            <Share size={20} color={currentColors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -123,46 +162,86 @@ export default function HashtagScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={24} color={colors.text} />
-        </TouchableOpacity>
-        
-        <View style={styles.headerContent}>
-          <View style={styles.hashtagHeader}>
-            <Hash size={20} color={colors.primary} />
-            <Text style={styles.headerTitle}>{tag}</Text>
-          </View>
-          <Text style={styles.postCount}>
-            {allPosts.length} {allPosts.length === 1 ? 'post' : 'posts'}
-          </Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: currentColors.groupedBackground }]}>
+      <Stack.Screen 
+        options={{
+          title: `#${tag}`,
+          headerStyle: { backgroundColor: currentColors.groupedBackground },
+          headerTintColor: currentColors.text,
+          headerTitleStyle: { fontWeight: '600', fontSize: 17 },
+          headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.push('/(tabs)')} style={styles.headerButton}>
+              <View style={styles.backButtonContent}>
+                <ArrowLeft size={20} color={currentColors.primary} />
+                <Text style={[styles.backButtonText, { color: currentColors.primary }]}>Dashboard</Text>
+              </View>
+            </TouchableOpacity>
+          ),
+        }} 
+      />
+
+      <View style={[styles.hashtagHeader, { backgroundColor: currentColors.background }]}>
+        <View style={styles.hashtagInfo}>
+          <Hash size={20} color={currentColors.primary} />
+          <Text style={[styles.hashtagTitle, { color: currentColors.text }]}>{tag}</Text>
         </View>
+        <Text style={[styles.postCount, { color: currentColors.textSecondary }]}>
+          {allPosts.length} {allPosts.length === 1 ? 'post' : 'posts'}
+        </Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {allPosts.length === 0 ? (
           <View style={styles.emptyState}>
-            <Hash size={64} color={colors.textSecondary} />
-            <Text style={styles.emptyTitle}>No posts found</Text>
-            <Text style={styles.emptySubtitle}>
+            <View style={[styles.emptyIcon, { backgroundColor: currentColors.systemFill }]}>
+              <Hash size={32} color={currentColors.primary} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: currentColors.text }]}>No posts found</Text>
+            <Text style={[styles.emptySubtitle, { color: currentColors.textSecondary }]}>
               There are no posts with #{tag} yet.{'\n'}
               Be the first to post with this hashtag!
             </Text>
-            <TouchableOpacity 
-              style={styles.createPostButton}
-              onPress={() => router.push('/(tabs)/create')}
-            >
-              <Text style={styles.createPostButtonText}>Create Post</Text>
-            </TouchableOpacity>
           </View>
         ) : (
-          allPosts.map(renderPost)
+          <View style={styles.postsContainer}>
+            {allPosts.map(renderPost)}
+          </View>
         )}
       </ScrollView>
+
+      <CommentsModal
+        visible={selectedPostForComments !== null}
+        onClose={() => setSelectedPostForComments(null)}
+        postId={selectedPostForComments || ''}
+      />
+
+      <ShareModal
+        visible={selectedPostForShare !== null}
+        onClose={() => setSelectedPostForShare(null)}
+        postContent={selectedPostForShare?.content || ''}
+        postAuthor={selectedPostForShare?.author || ''}
+      />
+
+      <PostOptionsModal
+        visible={selectedPostForOptions !== null}
+        onClose={() => setSelectedPostForOptions(null)}
+        onDelete={() => selectedPostForOptions && handleDeletePost(selectedPostForOptions.id)}
+        onShare={() => {
+          if (selectedPostForOptions) {
+            const post = allPosts.find(p => p.id === selectedPostForOptions.id);
+            if (post) {
+              setSelectedPostForShare({
+                id: post.id,
+                content: post.content,
+                author: post.userName
+              });
+            }
+          }
+        }}
+        isOwnPost={selectedPostForOptions?.isOwnPost || false}
+        postAuthor={selectedPostForOptions?.author || ''}
+      />
     </SafeAreaView>
   );
 }
@@ -170,37 +249,39 @@ export default function HashtagScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
-  header: {
+  headerButton: {
+    padding: 8,
+    marginLeft: -8,
+  },
+  backButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    gap: 4,
   },
-  backButton: {
-    marginRight: 16,
-    padding: 4,
-  },
-  headerContent: {
-    flex: 1,
+  backButtonText: {
+    fontSize: 17,
+    fontWeight: '400',
   },
   hashtagHeader: {
+    padding: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 0.33,
+    borderBottomColor: colors.border,
+  },
+  hashtagInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 4,
   },
-  headerTitle: {
+  hashtagTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
+    fontWeight: '700',
     marginLeft: 8,
   },
   postCount: {
     fontSize: 14,
-    color: colors.textSecondary,
+    fontWeight: '400',
   },
   content: {
     flex: 1,
@@ -208,39 +289,38 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 60,
-    paddingTop: 120,
+    paddingVertical: 80,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginTop: 24,
-    marginBottom: 12,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 16,
-    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
+    lineHeight: 22,
+    fontWeight: '400',
   },
-  createPostButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-  },
-  createPostButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+  postsContainer: {
+    paddingBottom: 20,
   },
   postCard: {
-    backgroundColor: colors.background,
     padding: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
+    marginBottom: 12,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    ...shadows.card,
   },
   postHeader: {
     flexDirection: 'row',
@@ -257,15 +337,19 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   avatarText: {
-    color: 'white',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   userDetails: {
     flex: 1,
@@ -273,7 +357,6 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
     marginBottom: 2,
   },
   userMeta: {
@@ -282,24 +365,20 @@ const styles = StyleSheet.create({
   },
   userRole: {
     fontSize: 14,
-    color: colors.primary,
     fontWeight: '500',
     textTransform: 'capitalize',
   },
   userSport: {
     fontSize: 14,
-    color: colors.textSecondary,
   },
   timestamp: {
     fontSize: 14,
-    color: colors.textSecondary,
   },
   moreButton: {
     padding: 4,
   },
   postContent: {
     fontSize: 16,
-    color: colors.text,
     lineHeight: 24,
     marginBottom: 12,
   },
@@ -307,26 +386,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   skillTag: {
-    backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    borderWidth: 0.5,
-    borderColor: colors.border,
   },
   skillText: {
+    color: 'white',
     fontSize: 14,
-    color: colors.primary,
     fontWeight: '500',
   },
   postActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 24,
-    paddingTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 0.33,
+    borderTopColor: colors.border,
   },
   actionButton: {
     flexDirection: 'row',
@@ -335,7 +413,6 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: colors.textSecondary,
     fontWeight: '500',
   },
 });
