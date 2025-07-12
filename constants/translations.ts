@@ -87,7 +87,6 @@ export const translations = {
     following: 'Following',
     
     // Dashboard sections
-    recentPosts: 'Recent Posts',
     recentPost: 'Recent Post',
     allCoaches: 'All Coaches',
     allAthletes: 'All Athletes',
@@ -181,7 +180,6 @@ export const translations = {
     following: 'Siguiendo',
     
     // Dashboard sections
-    recentPosts: 'Publicaciones Recientes',
     recentPost: 'Publicación Reciente',
     allCoaches: 'Todos los Entrenadores',
     allAthletes: 'Todos los Atletas',
@@ -275,7 +273,6 @@ export const translations = {
     following: 'Abonnements',
     
     // Dashboard sections
-    recentPosts: 'Publications Récentes',
     recentPost: 'Publication Récente',
     allCoaches: 'Tous les Entraîneurs',
     allAthletes: 'Tous les Athlètes',
@@ -369,7 +366,6 @@ export const translations = {
     following: 'Folgt',
     
     // Dashboard sections
-    recentPosts: 'Neueste Beiträge',
     recentPost: 'Neuer Beitrag',
     allCoaches: 'Alle Trainer',
     allAthletes: 'Alle Athleten',
@@ -463,7 +459,6 @@ export const translations = {
     following: 'Seguiti',
     
     // Dashboard sections
-    recentPosts: 'Post Recenti',
     recentPost: 'Post Recente',
     allCoaches: 'Tutti gli Allenatori',
     allAthletes: 'Tutti gli Atleti',

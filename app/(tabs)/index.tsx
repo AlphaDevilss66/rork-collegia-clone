@@ -32,7 +32,6 @@ export default function HomeScreen() {
   
   // Get users to display based on current user's role
   const usersToShow = user?.role === 'athlete' ? mockCoaches : mockAthletes;
-  const sectionTitle = user?.role === 'athlete' ? t('allCoaches') : t('allAthletes');
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
@@ -174,7 +173,7 @@ export default function HomeScreen() {
         {/* Recent Posts Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('recentPosts')}</Text>
+            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('recentPost')}</Text>
             <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-posts')}>
               <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
             </TouchableOpacity>
@@ -184,10 +183,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* All Coaches/Athletes Section */}
+        {/* All Coaches Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{sectionTitle}</Text>
+            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('allCoaches')}</Text>
             <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-users')}>
               <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
             </TouchableOpacity>
