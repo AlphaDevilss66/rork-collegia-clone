@@ -1,13 +1,12 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { colors, darkColors } from "@/constants/colors";
 import { Platform } from 'react-native';
 import { useThemeStore } from '@/stores/theme-store';
 import { useNotificationStore } from '@/stores/notification-store';
 import { useUserStore } from '@/stores/user-store';
-import { Home, Grid2X2, MessageCircle, UserCircle, Plus } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { Home, Grid2X2, MessageCircle, UserCircle } from 'lucide-react-native';
 
 function TabBarIcon({ name, color, focused }: { name: string; color: string; focused: boolean }) {
   const { unreadCount } = useNotificationStore();
@@ -16,7 +15,6 @@ function TabBarIcon({ name, color, focused }: { name: string; color: string; foc
   const iconComponents = {
     home: () => <Home size={24} color={color} strokeWidth={focused ? 2.5 : 1.5} fill={focused ? color : 'none'} />,
     search: () => <Grid2X2 size={24} color={color} strokeWidth={focused ? 2.5 : 1.5} />,
-    create: () => <Plus size={24} color={color} strokeWidth={focused ? 2.5 : 1.5} />,
     message: () => (
       <View style={tabStyles.messageIconContainer}>
         <MessageCircle size={24} color={color} strokeWidth={focused ? 2.5 : 1.5} />
@@ -143,21 +141,6 @@ export default function TabLayout() {
         options={{
           title: "Discover",
           tabBarIcon: ({ color, focused }) => <TabBarIcon name="search" color={color} focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="create"
-        options={{
-          title: "Create",
-          tabBarIcon: ({ color, focused }) => <TabBarIcon name="create" color={color} focused={focused} />,
-          tabBarButton: (props) => (
-            <TouchableOpacity
-              {...props}
-              onPress={() => {
-                router.push('/create');
-              }}
-            />
-          ),
         }}
       />
       <Tabs.Screen
