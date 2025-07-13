@@ -183,7 +183,7 @@ export default function HomeScreen() {
         {/* Recent Posts Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{t('recentPosts')}</Text>
+            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>Recent Post</Text>
             <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-posts')}>
               <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
             </TouchableOpacity>
