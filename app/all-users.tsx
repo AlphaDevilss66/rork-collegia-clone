@@ -74,6 +74,11 @@ export default function AllUsersScreen() {
               </View>
             </TouchableOpacity>
           ),
+          headerRight: () => (
+            <TouchableOpacity onPress={() => router.push('/(tabs)')} style={styles.headerButton}>
+              <Text style={[styles.backButtonText, { color: currentColors.primary }]}>Dashboard</Text>
+            </TouchableOpacity>
+          ),
         }} 
       />
 
