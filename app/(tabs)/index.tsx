@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Image, Pressable } from 'react-native';
-import { Heart, MessageCircle, Share, MoreHorizontal, Sparkles, Plus, ChevronRight, Users, User, Edit3 } from 'lucide-react-native';
+import { Heart, MessageCircle, Share, MoreHorizontal, Sparkles, Plus, ChevronRight, Users, User, Edit3, ArrowUpRight } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { usePostsStore } from '@/stores/posts-store';
 import { useUserStore } from '@/stores/user-store';
@@ -65,16 +65,14 @@ export default function HomeScreen() {
 
   const renderRecentPostCard = (post: any, index: number) => {
     const isLiked = user ? isPostLikedByUser(post.id, user.id) : false;
-    const roleAccent = post.userRole === 'athlete' ? currentColors.athleteAccent : currentColors.coachAccent;
     
     return (
       <Pressable 
         key={post.id} 
         style={({ pressed }) => [
           styles.recentPostCard, 
-          { backgroundColor: currentColors.cardBackground },
-          shadows.card,
-          pressed && { opacity: 0.95, transform: [{ scale: 0.98 }] }
+          { backgroundColor: currentColors.background },
+          pressed && { opacity: 0.96, transform: [{ scale: 0.98 }] }
         ]}
         onPress={() => {
           // Navigate to post details or expand
@@ -82,9 +80,10 @@ export default function HomeScreen() {
       >
         <View style={styles.recentPostContent}>
           <View style={styles.recentPostHeader}>
+            <View style={[styles.roleIndicator, { backgroundColor: post.userRole === 'athlete' ? currentColors.systemBlue : currentColors.systemOrange }]} />
             <View style={styles.recentPostUserInfo}>
               <View style={[styles.recentPostAvatar, { backgroundColor: currentColors.systemFill }]}>
-                <Text style={[styles.recentPostAvatarText, { color: roleAccent }]}>
+                <Text style={[styles.recentPostAvatarText, { color: currentColors.primary }]}>
                   {post.userName.charAt(0).toUpperCase()}
                 </Text>
               </View>
@@ -101,15 +100,18 @@ export default function HomeScreen() {
           <Text style={[styles.recentPostContentText, { color: currentColors.text }]} numberOfLines={3}>
             {post.content}
           </Text>
-          <View style={styles.recentPostStats}>
-            <View style={styles.recentPostStat}>
-              <Heart size={16} color={isLiked ? currentColors.error : currentColors.textSecondary} fill={isLiked ? currentColors.error : 'none'} />
-              <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.likes}</Text>
+          <View style={styles.recentPostFooter}>
+            <View style={styles.recentPostStats}>
+              <View style={styles.recentPostStat}>
+                <Heart size={14} color={isLiked ? currentColors.error : currentColors.textSecondary} fill={isLiked ? currentColors.error : 'none'} />
+                <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.likes}</Text>
+              </View>
+              <View style={styles.recentPostStat}>
+                <MessageCircle size={14} color={currentColors.textSecondary} />
+                <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.comments?.length || 0}</Text>
+              </View>
             </View>
-            <View style={styles.recentPostStat}>
-              <MessageCircle size={16} color={currentColors.textSecondary} />
-              <Text style={[styles.recentPostStatText, { color: currentColors.textSecondary }]}>{post.comments?.length || 0}</Text>
-            </View>
+            <ArrowUpRight size={16} color={currentColors.textTertiary} />
           </View>
         </View>
       </Pressable>
@@ -123,24 +125,28 @@ export default function HomeScreen() {
         key={userItem.id} 
         style={({ pressed }) => [
           styles.userCard, 
-          { backgroundColor: currentColors.cardBackground },
-          shadows.card,
-          pressed && { opacity: 0.95, transform: [{ scale: 0.98 }] }
+          { backgroundColor: currentColors.background },
+          pressed && { opacity: 0.96, transform: [{ scale: 0.98 }] }
         ]}
         onPress={() => {
           // Navigate to user profile
         }}
       >
-        <Image 
-          source={{ uri: userItem.avatar }} 
-          style={styles.userCardImage}
-        />
-        <View style={styles.userCardOverlay}>
-          <Text style={[styles.userCardTitle, { color: 'white' }]} numberOfLines={1}>
-            {isCoach ? userItem.specialization : userItem.sport}
-          </Text>
-          <Text style={[styles.userCardSubtitle, { color: 'rgba(255,255,255,0.85)' }]} numberOfLines={1}>
+        <View style={styles.userCardImageContainer}>
+          <Image 
+            source={{ uri: userItem.avatar }} 
+            style={styles.userCardImage}
+          />
+          <View style={[styles.userRoleBadge, { backgroundColor: isCoach ? currentColors.systemOrange : currentColors.systemBlue }]}>
+            <Text style={styles.userRoleBadgeText}>{isCoach ? 'C' : 'A'}</Text>
+          </View>
+        </View>
+        <View style={styles.userCardContent}>
+          <Text style={[styles.userCardName, { color: currentColors.text }]} numberOfLines={1}>
             {userItem.name}
+          </Text>
+          <Text style={[styles.userCardSpecialty, { color: currentColors.textSecondary }]} numberOfLines={1}>
+            {isCoach ? userItem.specialization : userItem.sport}
           </Text>
         </View>
       </Pressable>
@@ -150,28 +156,33 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: currentColors.groupedBackground }]}>
       <View style={[styles.header, { backgroundColor: currentColors.groupedBackground }]}>
-        <Text style={[styles.headerTitle, { color: currentColors.text }]}>{t('dashboard')}</Text>
-        <View style={styles.headerActions}>
-          <Pressable 
-            style={({ pressed }) => [
-              styles.createButton, 
-              shadows.createButton,
-              pressed && { opacity: 0.9, transform: [{ scale: 0.95 }] }
-            ]}
-            onPress={handleCreatePost}
-          >
-            <Plus size={20} color="#000000" strokeWidth={2.5} />
-          </Pressable>
-          <Pressable 
-            style={({ pressed }) => [
-              styles.myPostsButton, 
-              shadows.createButton,
-              pressed && { opacity: 0.9, transform: [{ scale: 0.95 }] }
-            ]}
-            onPress={handleMyPosts}
-          >
-            <Edit3 size={18} color="#000000" strokeWidth={2.5} />
-          </Pressable>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={[styles.headerGreeting, { color: currentColors.textSecondary }]}>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}</Text>
+            <Text style={[styles.headerTitle, { color: currentColors.text }]}>{user?.name ? user.name.split(' ')[0] : 'Welcome'}</Text>
+          </View>
+          <View style={styles.headerActions}>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.actionButton, 
+                { backgroundColor: currentColors.systemFill },
+                pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }
+              ]}
+              onPress={handleMyPosts}
+            >
+              <Edit3 size={18} color={currentColors.primary} strokeWidth={2} />
+            </Pressable>
+            <Pressable 
+              style={({ pressed }) => [
+                styles.primaryButton, 
+                { backgroundColor: currentColors.primary },
+                pressed && { opacity: 0.9, transform: [{ scale: 0.95 }] }
+              ]}
+              onPress={handleCreatePost}
+            >
+              <Plus size={18} color="white" strokeWidth={2.5} />
+            </Pressable>
+          </View>
         </View>
       </View>
       
@@ -183,22 +194,41 @@ export default function HomeScreen() {
         {/* Recent Posts Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>Recent Post</Text>
-            <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-posts')}>
-              <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
+            <View>
+              <Text style={[styles.sectionTitle, { color: currentColors.text }]}>Recent Activity</Text>
+              <Text style={[styles.sectionSubtitle, { color: currentColors.textSecondary }]}>Latest posts from the community</Text>
+            </View>
+            <TouchableOpacity 
+              style={[styles.seeAllButton, { backgroundColor: currentColors.systemFill }]} 
+              onPress={() => router.push('/all-posts')}
+            >
+              <Text style={[styles.seeAllText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
+              <ChevronRight size={14} color={currentColors.primary} />
             </TouchableOpacity>
           </View>
-          <View style={styles.recentPostsGrid}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.recentPostsContainer}
+            style={styles.recentPostsScroll}
+          >
             {recentPosts.map(renderRecentPostCard)}
-          </View>
+          </ScrollView>
         </View>
 
         {/* All Coaches/Athletes Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{sectionTitle}</Text>
-            <TouchableOpacity style={styles.sectionAction} onPress={() => router.push('/all-users')}>
-              <Text style={[styles.sectionActionText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
+            <View>
+              <Text style={[styles.sectionTitle, { color: currentColors.text }]}>{sectionTitle}</Text>
+              <Text style={[styles.sectionSubtitle, { color: currentColors.textSecondary }]}>Connect with {user?.role === 'athlete' ? 'coaches' : 'athletes'}</Text>
+            </View>
+            <TouchableOpacity 
+              style={[styles.seeAllButton, { backgroundColor: currentColors.systemFill }]} 
+              onPress={() => router.push('/all-users')}
+            >
+              <Text style={[styles.seeAllText, { color: currentColors.primary }]}>{t('seeAll')}</Text>
+              <ChevronRight size={14} color={currentColors.primary} />
             </TouchableOpacity>
           </View>
           <View style={styles.usersGrid}>
@@ -248,109 +278,154 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 24,
+    paddingBottom: 32,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  headerGreeting: {
+    fontSize: 16,
+    fontWeight: '400',
+    marginBottom: 2,
   },
   headerTitle: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: '700',
-    letterSpacing: -0.41,
-    lineHeight: 41,
+    letterSpacing: -0.6,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
+  },
+  actionButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   feed: {
     flex: 1,
   },
   feedContent: {
-    paddingBottom: 32,
+    paddingBottom: 100,
   },
   section: {
-    marginBottom: 40,
+    marginBottom: 32,
   },
   sectionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
-    letterSpacing: -0.26,
-    lineHeight: 28,
+    letterSpacing: -0.4,
+    marginBottom: 2,
   },
-  sectionAction: {
-    padding: 8,
+  sectionSubtitle: {
+    fontSize: 15,
+    fontWeight: '400',
   },
-  sectionActionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    lineHeight: 21,
-  },
-  recentPostsGrid: {
+  seeAllButton: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 4,
+  },
+  seeAllText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  recentPostsScroll: {
+    marginBottom: 8,
+  },
+  recentPostsContainer: {
     paddingHorizontal: 20,
-    gap: 12,
+    gap: 16,
   },
   recentPostCard: {
-    flex: 1,
-    borderRadius: 16,
-    padding: 16,
-    minHeight: 160,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.04)',
+    width: 280,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   recentPostContent: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   recentPostHeader: {
-    marginBottom: 12,
+    position: 'relative',
+    marginBottom: 16,
+  },
+  roleIndicator: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   recentPostUserInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   recentPostAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
   recentPostAvatarText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    lineHeight: 16,
   },
   recentPostDetails: {
     flex: 1,
   },
   recentPostAuthor: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    lineHeight: 20,
-    marginBottom: 1,
+    marginBottom: 2,
   },
   recentPostTime: {
     fontSize: 13,
     fontWeight: '400',
-    lineHeight: 18,
   },
   recentPostContentText: {
     fontSize: 15,
-    lineHeight: 20,
-    marginBottom: 12,
+    lineHeight: 22,
+    marginBottom: 16,
     fontWeight: '400',
+  },
+  recentPostFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   recentPostStats: {
     flexDirection: 'row',
@@ -364,7 +439,6 @@ const styles = StyleSheet.create({
   recentPostStatText: {
     fontSize: 13,
     fontWeight: '500',
-    lineHeight: 18,
   },
   usersGrid: {
     flexDirection: 'row',
@@ -374,51 +448,54 @@ const styles = StyleSheet.create({
   },
   userCard: {
     width: '48%',
-    aspectRatio: 1,
-    borderRadius: 20,
-    overflow: 'hidden',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  userCardImageContainer: {
     position: 'relative',
-    borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.04)',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   userCardImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
-  userCardOverlay: {
+  userRoleBadge: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    bottom: -2,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  userCardTitle: {
+  userRoleBadgeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  userCardContent: {
+    alignItems: 'center',
+  },
+  userCardName: {
     fontSize: 16,
     fontWeight: '600',
-    lineHeight: 21,
-    marginBottom: 2,
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  userCardSubtitle: {
+  userCardSpecialty: {
     fontSize: 13,
     fontWeight: '400',
-    lineHeight: 18,
-  },
-  createButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  myPostsButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
+    textAlign: 'center',
   },
 });
